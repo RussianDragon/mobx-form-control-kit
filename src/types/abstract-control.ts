@@ -58,7 +58,7 @@ export interface IAbstractControl {
   get maxEventLevel(): ValidationEventTypes;
   /** Validators / Валидации */
   get validators(): ValidatorsFunction<IAbstractControl>[];
-  /** Additional (server) errors / Дополнительтные (серверные) ошибки **/
+  /** Set validators /  Изменяет список валидаций */
   set validators(validators: ValidatorsFunction<IAbstractControl>[]);
   element: HTMLElement | null;
   /** Field for transferring additional information / Поле для передачи дополнительной информации (в логике не участвует) **/

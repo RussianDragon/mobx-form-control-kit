@@ -6,13 +6,13 @@ import {
   reaction,
   runInAction,
   toJS,
-} from "mobx";
-import { ValidationEvent } from "./types/validation-event";
-import { ControlTypes } from "./types/control-types";
-import { Throttled } from "./utilities/throttled";
-import { AbstractControl } from "./abstract-control";
-import { ValidatorsFunction } from "./types/validators-function";
-import { IAbstractControl } from "./types/abstract-control";
+} from 'mobx';
+import { ValidationEvent } from './types/validation-event';
+import { ControlTypes } from './types/control-types';
+import { Throttled } from './utilities/throttled';
+import { AbstractControl } from './abstract-control';
+import { ValidatorsFunction } from './types/validators-function';
+import { IAbstractControl } from './types/abstract-control';
 
 interface IStateValidatos {
   workInProcess: boolean;
@@ -20,11 +20,11 @@ interface IStateValidatos {
 }
 
 enum PrivateFields {
-  value = "_value",
-  dirty = "_dirty",
-  touched = "_touched",
-  isFocused = "_isFocused",
-  reactionValidations = "_reactionValidations",
+  value = '_value',
+  dirty = '_dirty',
+  touched = '_touched',
+  isFocused = '_isFocused',
+  reactionValidations = '_reactionValidations',
 }
 
 export type UpdateValidValueHandler<TEntity> = (val: TEntity) => void;
@@ -33,12 +33,12 @@ export class FormControl<TEntity = string> extends AbstractControl {
   //------
   /** Validation in progress / В процессе анализа **/
   public get processing(): boolean {
-    return this._reactionValidations.some((rv) => rv.result.workInProcess);
+    return this._reactionValidations.some(rv => rv.result.workInProcess);
   }
 
   //------
   protected get _events(): ValidationEvent[][] {
-    return this._reactionValidations.map((rv) => rv.result.events);
+    return this._reactionValidations.map(rv => rv.result.events);
   }
 
   //------
@@ -51,6 +51,7 @@ export class FormControl<TEntity = string> extends AbstractControl {
   public set value(value: TEntity) {
     this.initializeCompleted = true;
     this.dirty = true;
+    this.tempErrors = [];
     this._value = value;
   }
 
@@ -141,7 +142,7 @@ export class FormControl<TEntity = string> extends AbstractControl {
 
       /** Additional information / Блок с дополнительной информацией **/
       additionalData?: unknown | null;
-    }
+    },
   ) {
     super(ControlTypes.Control);
     makeObservable<FormControl<TEntity>, PrivateFields>(this, {
@@ -168,43 +169,40 @@ export class FormControl<TEntity = string> extends AbstractControl {
 
     this.getActivate = options?.getActivate;
     this.additionalData = options?.additionalData;
-    this.validators =
-      (options?.validators as ValidatorsFunction<IAbstractControl>[]) ?? [];
+    this.validators = (options?.validators as ValidatorsFunction<IAbstractControl>[]) ?? [];
     this.onChangeValue = options?.onChangeValue;
     this.onChangeValidValue = options?.onChangeValidValue;
 
     const getValue =
-      valueOrGetterValue instanceof Function
-        ? valueOrGetterValue
-        : () => valueOrGetterValue;
+      valueOrGetterValue instanceof Function ? valueOrGetterValue : () => valueOrGetterValue;
 
     this._value = getValue();
     this.reactionDisposers.push(
-      reaction(getValue, (value) => {
+      reaction(getValue, value => {
         this._value = value;
-      })
+      }),
     );
 
     this.reactionDisposers.push(
       reaction(
         () => this._value,
-        (value) => {
+        value => {
           this.onChangeValue?.(value);
         },
         {
           fireImmediately: options?.callSetterOnInitialize ?? false,
-        }
-      )
+        },
+      ),
     );
 
     this.reactionDisposers.push(
       reaction(
         () => this.validators.slice(),
-        (validators) => {
+        validators => {
           for (const reactionValidation of this._reactionValidations) {
             reactionValidation.disposers();
           }
-          this._reactionValidations = validators.map((validator) => {
+          this._reactionValidations = validators.map(validator => {
             const throttled = new Throttled<ValidationEvent[]>();
             const result: IStateValidatos = observable({
               workInProcess: false,
@@ -217,47 +215,47 @@ export class FormControl<TEntity = string> extends AbstractControl {
                   value: toJS(this.value),
                   validator: validator(this),
                 }),
-                (data) => {
+                data => {
                   result.workInProcess = true;
                   throttled.invoke(
                     () => data.validator,
                     0,
-                    (events) =>
+                    events =>
                       runInAction(() => {
                         result.events = events;
                         result.workInProcess = false;
-                      })
+                      }),
                   );
                 },
                 {
                   fireImmediately: true,
-                }
+                },
               ),
             };
           });
         },
         {
           fireImmediately: true,
-        }
-      )
+        },
+      ),
     );
 
     this.reactionDisposers.push(
       reaction(
         () => ({
-          value: this._value,
+          value: toJS(this._value),
           valid: this.valid,
           processing: this.processing,
         }),
-        (data) => {
+        data => {
           if (this.initializeCompleted && !data.processing && data.valid) {
             this.onChangeValidValue?.(data.value);
           }
         },
         {
           fireImmediately: true,
-        }
-      )
+        },
+      ),
     );
   }
 

@@ -6,15 +6,15 @@ import {
   reaction,
   runInAction,
   toJS,
-} from "mobx";
-import { AbstractControl } from "./abstract-control";
-import { ControlTypes } from "./types/control-types";
-import { ControlsCollection } from "./types/controls-collection";
-import { ValidatorsFunction } from "./types/validators-function";
-import { IAbstractControl } from "./types/abstract-control";
-import { ValidationEvent } from "./types/validation-event";
-import { Throttled } from "./utilities/throttled";
-import { FormControl } from "./form-control";
+} from 'mobx';
+import { AbstractControl } from './abstract-control';
+import { ControlTypes } from './types/control-types';
+import { ControlsCollection } from './types/controls-collection';
+import { ValidatorsFunction } from './types/validators-function';
+import { IAbstractControl } from './types/abstract-control';
+import { ValidationEvent } from './types/validation-event';
+import { Throttled } from './utilities/throttled';
+import { FormControl } from './form-control';
 
 interface IStateValidatos {
   workInProcess: boolean;
@@ -22,25 +22,23 @@ interface IStateValidatos {
 }
 
 enum PrivateFields {
-  controls = "_controls",
-  reactionValidations = "_reactionValidations",
+  controls = '_controls',
+  reactionValidations = '_reactionValidations',
 }
 
-export class FormGroup<
-  TControls extends ControlsCollection
-> extends AbstractControl {
+export class FormGroup<TControls extends ControlsCollection> extends AbstractControl {
   //------
   /** Validation in progress / В процессе анализа **/
   public get processing(): boolean {
     return (
-      this._reactionValidations.some((rv) => rv.result.workInProcess) &&
-      this.allControlList.some((c) => c.processing)
+      this._reactionValidations.some(rv => rv.result.workInProcess) &&
+      this.allControlList.some(c => c.processing)
     );
   }
 
   //------
   protected get _events(): ValidationEvent[][] {
-    return this._reactionValidations.map((rv) => rv.result.events);
+    return this._reactionValidations.map(rv => rv.result.events);
   }
 
   //------
@@ -57,14 +55,12 @@ export class FormGroup<
   //------
   /** Valid / Валидные данные **/
   public get valid(): boolean {
-    return (
-      !this.hasErrors && this.controlList.every((c) => c.valid)
-    );
+    return !this.hasErrors && this.controlList.every(c => c.valid);
   }
 
   //------
   public get dirty(): boolean {
-    return this.controlList.some((c) => c.dirty);
+    return this.controlList.some(c => c.dirty);
   }
 
   /** Set marker "value changed" / Изменяет состояния маркета "данные изменены" **/
@@ -75,7 +71,7 @@ export class FormGroup<
   //------
   /** The field was in focus / Поле было в фокусе **/
   public get touched(): boolean {
-    return this.controlList.some((c) => c.touched);
+    return this.controlList.some(c => c.touched);
   }
 
   /** Set marker "field was out of focus" / Изменяет состояния маркета "значение было в фокусе" **/
@@ -85,7 +81,7 @@ export class FormGroup<
 
   //------
   public get focused(): boolean {
-    return this.controlList.some((c) => c.focused);
+    return this.controlList.some(c => c.focused);
   }
 
   public set focused(focused: boolean) {
@@ -121,7 +117,7 @@ export class FormGroup<
 
       /** Additional information / Блок с дополнительной информацией */
       additionalData?: unknown | null;
-    }
+    },
   ) {
     super(ControlTypes.Group);
 
@@ -144,17 +140,16 @@ export class FormGroup<
     this.additionalData = options?.additionalData;
     this._controls = controls;
 
-    this.validators =
-      (options?.validators as ValidatorsFunction<IAbstractControl>[]) ?? [];
+    this.validators = (options?.validators as ValidatorsFunction<IAbstractControl>[]) ?? [];
 
     this.reactionDisposers.push(
       reaction(
         () => this.validators.slice(),
-        (validators) => {
+        validators => {
           for (const reactionValidation of this._reactionValidations) {
             reactionValidation.disposers();
           }
-          this._reactionValidations = validators.map((validator) => {
+          this._reactionValidations = validators.map(validator => {
             const throttled = new Throttled<ValidationEvent[]>();
             const result: IStateValidatos = observable({
               workInProcess: false,
@@ -167,29 +162,38 @@ export class FormGroup<
                   controls: toJS(this.controls),
                   validator: validator(this),
                 }),
-                (data) => {
+                data => {
                   result.workInProcess = true;
                   throttled.invoke(
                     () => data.validator,
                     0,
-                    (events) =>
+                    events =>
                       runInAction(() => {
                         result.events = events;
                         result.workInProcess = false;
-                      })
+                      }),
                   );
                 },
                 {
                   fireImmediately: true,
-                }
+                },
               ),
             };
           });
         },
         {
           fireImmediately: true,
-        }
-      )
+        },
+      ),
+    );
+
+    this.reactionDisposers.push(
+      reaction(
+        () => this.allControlList.map(a => toJS(a.value)),
+        () => {
+          this.tempErrors = [];
+        },
+      ),
     );
   }
 
@@ -206,7 +210,7 @@ export class FormGroup<
   }
 
   protected getProcessing = (): boolean =>
-    this._reactionValidations.some((rv) => rv.result.workInProcess);
+    this._reactionValidations.some(rv => rv.result.workInProcess);
 
   /** Returns a complete list of FormControls without attachments (terminal elements) / Возвращает полный список FormControl-ов без вложений (терминальных элементов) */
   public *getAllControls(): IterableIterator<FormControl<unknown>> {

@@ -24,7 +24,7 @@ export abstract class AbstractControl implements IAbstractControl {
     return this.getActivate?.() ?? true;
   }
 
-  /** Error checking is disabled (control is always valid) / Проверка ошибок отключена (контрол всегда валиден)  **/
+  /** Error checking is disabled (reverse active) / Проверка ошибок отключена (обратное значение active)  **/
   public get disabled(): boolean {
     return !this.active;
   }
