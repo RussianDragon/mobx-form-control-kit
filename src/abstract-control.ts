@@ -1,13 +1,13 @@
-import { computed, makeObservable, observable, when } from "mobx";
-import { ControlTypes } from "./types/control-types";
-import { ValidationEventTypes } from "./types/validation-event-types";
-import { ValidationEvent } from "./types/validation-event";
-import { IAbstractControl } from "./types/abstract-control";
-import { ValidatorsFunction } from "./types/validators-function";
+import { computed, makeObservable, observable, when } from 'mobx';
+import { ControlTypes } from './types/control-types';
+import { ValidationEventTypes } from './types/validation-event-types';
+import { ValidationEvent } from './types/validation-event';
+import { IAbstractControl } from './types/abstract-control';
+import { ValidatorsFunction } from './types/validators-function';
 
 enum PrivateFields {
-  tempErrors = "_tempErrors",
-  validators = "_validators",
+  tempErrors = '_tempErrors',
+  validators = '_validators',
 }
 
 export abstract class AbstractControl implements IAbstractControl {
@@ -92,7 +92,7 @@ export abstract class AbstractControl implements IAbstractControl {
   //------
   /** Errors list / Список ошибок **/
   public get errors(): ValidationEvent[] {
-    return this.events.filter((e) => e.type === ValidationEventTypes.Error);
+    return this.events.filter(e => e.type === ValidationEventTypes.Error);
   }
 
   /** The field contains errors / Присутствуют ошибки **/
@@ -103,7 +103,7 @@ export abstract class AbstractControl implements IAbstractControl {
   //------
   /** Warnings messages list / Список сообщений с типом "Внимание" **/
   public get warnings(): ValidationEvent[] {
-    return this.events.filter((e) => e.type === ValidationEventTypes.Warning);
+    return this.events.filter(e => e.type === ValidationEventTypes.Warning);
   }
 
   /** The field contains warnings messages / Присутствуют сообщения с типом "Внимание" **/
@@ -114,9 +114,7 @@ export abstract class AbstractControl implements IAbstractControl {
   //------
   /** Informations messages list / Сообщения с типом "Информационные сообщения" **/
   public get informations(): ValidationEvent[] {
-    return this.events.filter(
-      (e) => e.type === ValidationEventTypes.Informations
-    );
+    return this.events.filter(e => e.type === ValidationEventTypes.Informations);
   }
 
   /** The field contains informations messages / Присутствуют сообщения с типом "Информационные сообщения" **/
@@ -127,7 +125,7 @@ export abstract class AbstractControl implements IAbstractControl {
   //------
   /** Successes messages list / Сообщения с типом "успешная валидация" **/
   public get successes(): ValidationEvent[] {
-    return this.events.filter((e) => e.type === ValidationEventTypes.Success);
+    return this.events.filter(e => e.type === ValidationEventTypes.Success);
   }
 
   /** The field contains successes / Присутствуют сообщения с типом "успешная валидация" **/
@@ -144,8 +142,7 @@ export abstract class AbstractControl implements IAbstractControl {
   }
 
   //------
-  private [PrivateFields.validators]: ValidatorsFunction<IAbstractControl>[] =
-    [];
+  private [PrivateFields.validators]: ValidatorsFunction<IAbstractControl>[] = [];
 
   public get validators(): ValidatorsFunction<IAbstractControl>[] {
     return this._validators;
@@ -164,7 +161,7 @@ export abstract class AbstractControl implements IAbstractControl {
 
   constructor(
     /** Type / Тип контрола **/
-    public readonly type: ControlTypes
+    public readonly type: ControlTypes,
   ) {
     makeObservable<AbstractControl, PrivateFields>(this, {
       getActivate: observable.ref,
@@ -206,11 +203,13 @@ export abstract class AbstractControl implements IAbstractControl {
   }
 
   /** Dispose (call in unmount react control) / Вызвать при удалении контрола **/
-  public dispose(): void {}
+  public dispose(): void {
+    //
+  }
 
   /** Get error by key / Получить ошибку по ключу */
   public event(key: string): ValidationEvent | undefined {
-    return this.events.find((err) => err.key === key);
+    return this.events.find(err => err.key === key);
   }
 
   /** Waiting for end of validation / Ожидание окончания проверки **/

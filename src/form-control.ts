@@ -69,7 +69,7 @@ export class FormControl<TEntity = string> extends AbstractControl {
   onChangeValidValue?: UpdateValidValueHandler<TEntity> | null;
 
   //------
-  protected [PrivateFields.dirty]: boolean = false;
+  protected [PrivateFields.dirty] = false;
   /** Value changed / Значение изменялось **/
   public get dirty(): boolean {
     return this._dirty;
@@ -81,7 +81,7 @@ export class FormControl<TEntity = string> extends AbstractControl {
   }
 
   //------
-  protected [PrivateFields.touched]: boolean = false;
+  protected [PrivateFields.touched] = false;
 
   /** The field was in focus / Поле было в фокусе **/
   public get touched(): boolean {
@@ -94,7 +94,7 @@ export class FormControl<TEntity = string> extends AbstractControl {
   }
 
   //------
-  private [PrivateFields.isFocused]: boolean = false;
+  private [PrivateFields.isFocused] = false;
 
   /** The field is now in focus / Поле сейчас в фокусе **/
   public get focused(): boolean {
@@ -118,6 +118,9 @@ export class FormControl<TEntity = string> extends AbstractControl {
 
   //------
   private initializeCompleted: boolean;
+
+  private getValue: () => TEntity;
+  private callSetterOnInitialize?: boolean;
 
   constructor(
     /** Initializing valueI / Инициализирующие значение или его getter */
@@ -173,12 +176,41 @@ export class FormControl<TEntity = string> extends AbstractControl {
     this.onChangeValue = options?.onChangeValue;
     this.onChangeValidValue = options?.onChangeValidValue;
 
-    const getValue =
+    this.getValue =
       valueOrGetterValue instanceof Function ? valueOrGetterValue : () => valueOrGetterValue;
 
-    this._value = getValue();
+    this._value = this.getValue();
+    this.callSetterOnInitialize = options?.callSetterOnInitialize;
+    this.initReactions();
+  }
+
+  public dispose(): void {
+    this.removeReactions();
+    super.dispose();
+  }
+
+  public setValue(value: TEntity, callChangeValue: boolean): void {
+    if (!callChangeValue) {
+      this.removeReactions();
+    }
+    this._value = value;
+    if (!callChangeValue) {
+      this.initReactions();
+    }
+  }
+
+  private removeReactions() {
+    for (const reactionValidation of this._reactionValidations) {
+      reactionValidation.disposers();
+    }
+    for (const reactionDisposer of this.reactionDisposers) {
+      reactionDisposer();
+    }
+  }
+
+  private initReactions() {
     this.reactionDisposers.push(
-      reaction(getValue, value => {
+      reaction(this.getValue, value => {
         this._value = value;
       }),
     );
@@ -190,7 +222,7 @@ export class FormControl<TEntity = string> extends AbstractControl {
           this.onChangeValue?.(value);
         },
         {
-          fireImmediately: options?.callSetterOnInitialize ?? false,
+          fireImmediately: this.initializeCompleted ? false : this.callSetterOnInitialize ?? false,
         },
       ),
     );
@@ -257,17 +289,5 @@ export class FormControl<TEntity = string> extends AbstractControl {
         },
       ),
     );
-  }
-
-  public dispose(): void {
-    for (const reactionValidation of this._reactionValidations) {
-      reactionValidation.disposers();
-    }
-
-    for (const reactionDisposer of this.reactionDisposers) {
-      reactionDisposer();
-    }
-
-    super.dispose();
   }
 }

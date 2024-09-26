@@ -1,15 +1,15 @@
-import { FormControl } from "../form-control";
-import { ValidatorsFunction } from "../types/validators-function";
-import { ValidationEvent } from "../types/validation-event";
-import { ValidationEventTypes } from "../types/validation-event-types";
+import { FormControl } from '../form-control';
+import { ValidatorsFunction } from '../types/validators-function';
+import { ValidationEvent } from '../types/validation-event';
+import { ValidationEventTypes } from '../types/validation-event-types';
 
 //------
-export const requiredValidatorKey = "required";
+export const requiredValidatorKey = 'required';
 export const requiredValidator =
   <TEntity>(
-    message: string = "Поле обязательно",
+    message = 'Поле обязательно',
     eventType = ValidationEventTypes.Error,
-    key = requiredValidatorKey
+    key = requiredValidatorKey,
   ): ValidatorsFunction<FormControl<TEntity>> =>
   async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
     if (!!control.value) {
@@ -28,15 +28,15 @@ export const requiredValidator =
 type TStrEntity = string | null | undefined;
 
 /** Not empty string / Не пустая строка */
-export const notEmptyOrSpacesValidatorKey = "notEmptyOrSpaces";
+export const notEmptyOrSpacesValidatorKey = 'notEmptyOrSpaces';
 export const notEmptyOrSpacesValidator =
   <TEntity extends TStrEntity>(
-    message: string = "Отсутствует значение",
+    message = 'Отсутствует значение',
     eventType = ValidationEventTypes.Error,
-    key = notEmptyOrSpacesValidatorKey
+    key = notEmptyOrSpacesValidatorKey,
   ): ValidatorsFunction<FormControl<TEntity>> =>
   async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
-    if (!!control.value && control.value.trim() !== "") {
+    if (!!control.value && control.value.trim() !== '') {
       return [];
     }
     return [
@@ -49,13 +49,13 @@ export const notEmptyOrSpacesValidator =
   };
 
 //------
-export const notContainSpacesValidatorKey = "notContainSpaces";
+export const notContainSpacesValidatorKey = 'notContainSpaces';
 /** Not contain spaces / Не содержит проблелов */
 export const notContainSpacesValidator =
   <TEntity extends TStrEntity>(
-    message: string = "Не может содержать пробелы",
+    message = 'Не может содержать пробелы',
     eventType = ValidationEventTypes.Error,
-    key = notContainSpacesValidatorKey
+    key = notContainSpacesValidatorKey,
   ): ValidatorsFunction<FormControl<TEntity>> =>
   async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
     if (!!control.value && !/\s/.test(control.value)) {
@@ -71,14 +71,14 @@ export const notContainSpacesValidator =
   };
 
 //------
-export const patternValidatorKey = "notLikePattern";
+export const patternValidatorKey = 'notLikePattern';
 /** Error if there is no pattern matching / Ошибка, если нет соответствия паттерну */
 export const patternValidator =
   <TEntity extends TStrEntity>(
     regExp: RegExp,
-    message: string = "Присутствуют недопустимые символы",
+    message = 'Присутствуют недопустимые символы',
     eventType = ValidationEventTypes.Error,
-    key = patternValidatorKey
+    key = patternValidatorKey,
   ): ValidatorsFunction<FormControl<TEntity>> =>
   async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
     if (control.value != null && regExp.test(control.value)) {
@@ -94,14 +94,14 @@ export const patternValidator =
   };
 
 //------
-export const invertPatternValidatorKey = "likePattern";
+export const invertPatternValidatorKey = 'likePattern';
 /** Error if there is a pattern match / Ошибка, если есть соответствие паттерну */
 export const invertPatternValidator =
   <TEntity extends TStrEntity>(
     regExp: RegExp,
-    message: string = "Присутствуют недопустимые символы",
+    message = 'Присутствуют недопустимые символы',
     eventType = ValidationEventTypes.Error,
-    key = invertPatternValidatorKey
+    key = invertPatternValidatorKey,
   ): ValidatorsFunction<FormControl<TEntity>> =>
   async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
     if (control.value != null && regExp.test(control.value)) {
@@ -117,13 +117,13 @@ export const invertPatternValidator =
   };
 
 //------
-export const minLengthValidatorKey = "minlength";
+export const minLengthValidatorKey = 'minlength';
 export const minLengthValidator =
   <TEntity extends TStrEntity>(
     minlength: number,
-    message: string = `Минимальная длина ${minlength}`,
+    message = `Минимальная длина ${minlength}`,
     eventType = ValidationEventTypes.Error,
-    key = minLengthValidatorKey
+    key = minLengthValidatorKey,
   ): ValidatorsFunction<FormControl<TEntity>> =>
   async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
     if (!control.value || minlength <= control.value.length) {
@@ -139,13 +139,13 @@ export const minLengthValidator =
   };
 
 //------
-export const maxLengthValidatorKey = "maxlength";
+export const maxLengthValidatorKey = 'maxlength';
 export const maxLengthValidator =
   <TEntity extends TStrEntity>(
     maxlength: number,
-    message: string = `Максимальная длина ${maxlength}`,
+    message = `Максимальная длина ${maxlength}`,
     eventType = ValidationEventTypes.Error,
-    key = maxLengthValidatorKey
+    key = maxLengthValidatorKey,
   ): ValidatorsFunction<FormControl<TEntity>> =>
   async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
     if (!control.value || control.value.length <= maxlength) {
@@ -161,13 +161,13 @@ export const maxLengthValidator =
   };
 
 //------
-export const absoluteLengthValidatorKey = "absoluteLength";
+export const absoluteLengthValidatorKey = 'absoluteLength';
 export const absoluteLengthValidator =
   <TEntity extends TStrEntity>(
     length: number,
-    message: string = `Длина отлична от ${length}`,
+    message = `Длина отлична от ${length}`,
     eventType = ValidationEventTypes.Error,
-    key = absoluteLengthValidatorKey
+    key = absoluteLengthValidatorKey,
   ): ValidatorsFunction<FormControl<TEntity>> =>
   async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
     if (!control.value || control.value.length === length) {
@@ -186,22 +186,22 @@ export const absoluteLengthValidator =
 type TReferenceValueEntity = number | Date;
 type TValueEntity = TReferenceValueEntity | string | null;
 
-export const minValueValidatorKey = "minValue";
+export const minValueValidatorKey = 'minValue';
 export const minValueValidator = <TEntity extends TValueEntity>(
   min: TReferenceValueEntity | (() => TReferenceValueEntity),
-  message: string = "Значение слишком маленькое",
+  message = 'Значение слишком маленькое',
   eventType = ValidationEventTypes.Error,
-  key = minValueValidatorKey
+  key = minValueValidatorKey,
 ): ValidatorsFunction<FormControl<TEntity>> => {
-  const getMin = typeof min === "function" ? min : () => min;
+  const getMin = typeof min === 'function' ? min : () => min;
   return async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
     if (control.value == null) {
       return [];
     }
     const minValue = getMin();
     let value: any = control.value;
-    if (typeof value === "string") {
-      if (typeof minValue === "number") {
+    if (typeof value === 'string') {
+      if (typeof minValue === 'number') {
         value = +value;
       } else if (minValue instanceof Date) {
         value = new Date(value);
@@ -221,22 +221,22 @@ export const minValueValidator = <TEntity extends TValueEntity>(
 };
 
 //------
-export const maxValueValidatorKey = "minValue";
+export const maxValueValidatorKey = 'minValue';
 export const maxValueValidator = <TEntity extends TValueEntity>(
   max: TReferenceValueEntity | (() => TReferenceValueEntity),
-  message: string = "Значение слишком большое",
+  message = 'Значение слишком большое',
   eventType = ValidationEventTypes.Error,
-  key = maxValueValidatorKey
+  key = maxValueValidatorKey,
 ): ValidatorsFunction<FormControl<TEntity>> => {
-  const getMax = typeof max === "function" ? max : () => max;
+  const getMax = typeof max === 'function' ? max : () => max;
   return async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
     if (control.value == null) {
       return [];
     }
     const maxValue = getMax();
     let value: any = control.value;
-    if (typeof value === "string") {
-      if (typeof maxValue === "number") {
+    if (typeof value === 'string') {
+      if (typeof maxValue === 'number') {
         value = +value;
       } else if (maxValue instanceof Date) {
         value = new Date(value);
@@ -256,14 +256,14 @@ export const maxValueValidator = <TEntity extends TValueEntity>(
 };
 
 //------
-export const compairValidatorKey = "compair";
+export const compairValidatorKey = 'compair';
 /** Wrapper for complex validation (error if validation returns false) / Обёртка для сложной проверки (ошибка, если проверка вернула false) */
 export const compareValidator =
   <TEntity>(
     expression: (value: TEntity) => boolean,
-    message: string = "Поле не валидно",
+    message = 'Поле не валидно',
     eventType = ValidationEventTypes.Error,
-    key = compairValidatorKey
+    key = compairValidatorKey,
   ): ValidatorsFunction<FormControl<TEntity>> =>
   async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
     if (expression(control.value)) {
@@ -279,14 +279,14 @@ export const compareValidator =
   };
 
 //------
-export const isEqualValidatorKey = "isEqual";
+export const isEqualValidatorKey = 'isEqual';
 /** Equals to {value} / Равно значению {value} */
 export const isEqualValidator =
   <TEntity>(
     value: TEntity,
-    message: string = "Поля не совпадают",
+    message = 'Поля не совпадают',
     eventType = ValidationEventTypes.Error,
-    key = isEqualValidatorKey
+    key = isEqualValidatorKey,
   ): ValidatorsFunction<FormControl<TEntity>> =>
   async (control: FormControl<TEntity>): Promise<ValidationEvent[]> => {
     if (!!control.value && control.value !== value) {
