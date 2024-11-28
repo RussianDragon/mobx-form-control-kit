@@ -23,6 +23,7 @@ interface IStateValidatos {
 
 enum PrivateFields {
   controls = '_controls',
+  touched = '_touched',
   reactionValidations = '_reactionValidations',
 }
 
@@ -69,13 +70,16 @@ export class FormGroup<TControls extends ControlsCollection> extends AbstractCon
   }
 
   //------
+  protected [PrivateFields.touched] = false;
+
   /** The field was in focus / Поле было в фокусе **/
   public get touched(): boolean {
-    return this.controlList.some(c => c.touched);
+    return this.controlList.length === 0 ? this._touched : this.controlList.some(c => c.touched);
   }
 
   /** Set marker "field was out of focus" / Изменяет состояния маркета "значение было в фокусе" **/
   public set touched(touched: boolean) {
+    this._touched = touched;
     for (const control of this.controlList) control.touched = touched;
   }
 
@@ -130,7 +134,10 @@ export class FormGroup<TControls extends ControlsCollection> extends AbstractCon
       valid: computed,
 
       dirty: computed,
+
+      _touched: observable,
       touched: computed,
+
       focused: computed,
 
       _reactionValidations: observable.shallow,
