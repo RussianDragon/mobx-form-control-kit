@@ -14,7 +14,7 @@ import { AbstractControl } from './abstract-control';
 import { ValidatorsFunction } from './types/validators-function';
 import { IAbstractControl } from './types/abstract-control';
 
-interface IStateValidatos {
+interface IStateValidators {
   workInProcess: boolean;
   events: ValidationEvent[];
 }
@@ -24,7 +24,7 @@ enum PrivateFields {
   dirty = '_dirty',
   touched = '_touched',
   isFocused = '_isFocused',
-  reactionValidations = '_reactionValidations',
+  resultValidations = '_resultValidations',
 }
 
 export type UpdateValidValueHandler<TEntity> = (val: TEntity) => void;
@@ -33,12 +33,12 @@ export class FormControl<TEntity = string> extends AbstractControl {
   //------
   /** Validation in progress / В процессе анализа **/
   public get processing(): boolean {
-    return this._reactionValidations.some(rv => rv.result.workInProcess);
+    return this._resultValidations.some(rv => rv.result.workInProcess);
   }
 
   //------
   protected get _events(): ValidationEvent[][] {
-    return this._reactionValidations.map(rv => rv.result.events);
+    return this._resultValidations.map(rv => rv.result.events);
   }
 
   //------
@@ -110,8 +110,8 @@ export class FormControl<TEntity = string> extends AbstractControl {
   }
 
   //------
-  private [PrivateFields.reactionValidations]: {
-    result: IStateValidatos;
+  private [PrivateFields.resultValidations]: {
+    result: IStateValidators;
     disposers: IReactionDisposer;
   }[] = [];
   private reactionDisposers: IReactionDisposer[] = [];
@@ -165,7 +165,7 @@ export class FormControl<TEntity = string> extends AbstractControl {
       _isFocused: observable.ref,
       focused: computed,
 
-      _reactionValidations: observable.shallow,
+      _resultValidations: observable.shallow,
     });
 
     this.initializeCompleted = options?.callSetterOnInitialize ?? false;
@@ -200,7 +200,7 @@ export class FormControl<TEntity = string> extends AbstractControl {
   }
 
   private removeReactions() {
-    for (const reactionValidation of this._reactionValidations) {
+    for (const reactionValidation of this._resultValidations) {
       reactionValidation.disposers();
     }
     for (const reactionDisposer of this.reactionDisposers) {
@@ -231,38 +231,43 @@ export class FormControl<TEntity = string> extends AbstractControl {
       reaction(
         () => this.validators.slice(),
         validators => {
-          for (const reactionValidation of this._reactionValidations) {
+          for (const reactionValidation of this._resultValidations) {
             reactionValidation.disposers();
           }
-          this._reactionValidations = validators.map(validator => {
+          this._resultValidations = validators.map(validator => {
             const throttled = new Throttled<ValidationEvent[]>();
-            const result: IStateValidatos = observable({
+            const result: IStateValidators = observable({
               workInProcess: false,
               events: [],
             });
+
+            const disposers = reaction(
+              () => ({
+                value: toJS(this.value),
+                validator: validator(this),
+              }),
+              data => {
+                console.log('!_1', data);
+
+                result.workInProcess = true;
+                throttled.invoke(
+                  () => data.validator,
+                  0,
+                  events =>
+                    runInAction(() => {
+                      result.events = events;
+                      result.workInProcess = false;
+                    }),
+                );
+              },
+              {
+                fireImmediately: true,
+              },
+            );
+
             return {
-              result: result,
-              disposers: reaction(
-                () => ({
-                  value: toJS(this.value),
-                  validator: validator(this),
-                }),
-                data => {
-                  result.workInProcess = true;
-                  throttled.invoke(
-                    () => data.validator,
-                    0,
-                    events =>
-                      runInAction(() => {
-                        result.events = events;
-                        result.workInProcess = false;
-                      }),
-                  );
-                },
-                {
-                  fireImmediately: true,
-                },
-              ),
+              result,
+              disposers,
             };
           });
         },
