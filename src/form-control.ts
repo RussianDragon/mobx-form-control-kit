@@ -19,20 +19,12 @@ interface IStateValidators {
   events: ValidationEvent[];
 }
 
-enum PrivateFields {
-  value = '_value',
-  dirty = '_dirty',
-  touched = '_touched',
-  isFocused = '_isFocused',
-  resultValidations = '_resultValidations',
-}
-
 export type UpdateValidValueHandler<TEntity> = (val: TEntity) => void;
 
 export class FormControl<TEntity = string> extends AbstractControl {
   //------
   /** Validation in progress / В процессе анализа **/
-  public get processing(): boolean {
+  @computed public get processing(): boolean {
     return this._resultValidations.some(rv => rv.result.workInProcess);
   }
 
@@ -42,9 +34,9 @@ export class FormControl<TEntity = string> extends AbstractControl {
   }
 
   //------
-  private [PrivateFields.value]: TEntity;
+  @observable private accessor _value: TEntity;
 
-  public get value(): TEntity {
+  @computed public get value(): TEntity {
     return this._value;
   }
 
@@ -57,7 +49,7 @@ export class FormControl<TEntity = string> extends AbstractControl {
 
   //------
   /** Valid / Валидные данные **/
-  public get valid(): boolean {
+  @computed public get valid(): boolean {
     return !this.hasErrors;
   }
 
@@ -69,9 +61,9 @@ export class FormControl<TEntity = string> extends AbstractControl {
   onChangeValidValue?: UpdateValidValueHandler<TEntity> | null;
 
   //------
-  protected [PrivateFields.dirty] = false;
+  @observable.ref protected accessor _dirty = false;
   /** Value changed / Значение изменялось **/
-  public get dirty(): boolean {
+  @computed public get dirty(): boolean {
     return this._dirty;
   }
 
@@ -81,10 +73,10 @@ export class FormControl<TEntity = string> extends AbstractControl {
   }
 
   //------
-  protected [PrivateFields.touched] = false;
+  @observable.ref protected _touched = false;
 
   /** The field was in focus / Поле было в фокусе **/
-  public get touched(): boolean {
+  @computed public get touched(): boolean {
     return this._touched;
   }
 
@@ -94,10 +86,10 @@ export class FormControl<TEntity = string> extends AbstractControl {
   }
 
   //------
-  private [PrivateFields.isFocused] = false;
+  @observable.ref private _isFocused = false;
 
   /** The field is now in focus / Поле сейчас в фокусе **/
-  public get focused(): boolean {
+  @computed public get focused(): boolean {
     return this._isFocused;
   }
 
@@ -110,7 +102,7 @@ export class FormControl<TEntity = string> extends AbstractControl {
   }
 
   //------
-  private [PrivateFields.resultValidations]: {
+  @observable.shallow private _resultValidations: {
     result: IStateValidators;
     disposers: IReactionDisposer;
   }[] = [];
@@ -148,26 +140,6 @@ export class FormControl<TEntity = string> extends AbstractControl {
     },
   ) {
     super(ControlTypes.Control);
-    makeObservable<FormControl<TEntity>, PrivateFields>(this, {
-      processing: computed,
-
-      _value: observable,
-      value: computed,
-
-      valid: computed,
-
-      _dirty: observable.ref,
-      dirty: computed,
-
-      _touched: observable.ref,
-      touched: computed,
-
-      _isFocused: observable.ref,
-      focused: computed,
-
-      _resultValidations: observable.shallow,
-    });
-
     this.initializeCompleted = options?.callSetterOnInitialize ?? false;
 
     this.getActivate = options?.getActivate;

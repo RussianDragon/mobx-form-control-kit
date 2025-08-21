@@ -30,7 +30,7 @@ enum PrivateFields {
 export class FormGroup<TControls extends ControlsCollection> extends AbstractControl {
   //------
   /** Validation in progress / В процессе анализа **/
-  public get processing(): boolean {
+  @computed public get processing(): boolean {
     return (
       this._reactionValidations.some(rv => rv.result.workInProcess) &&
       this.allControlList.some(c => c.processing)
@@ -43,9 +43,9 @@ export class FormGroup<TControls extends ControlsCollection> extends AbstractCon
   }
 
   //------
-  private [PrivateFields.controls]: TControls;
+  @observable private accessor _controls: TControls;
 
-  public get controls(): TControls {
+  @computed public get controls(): TControls {
     return this._controls;
   }
 
@@ -55,12 +55,12 @@ export class FormGroup<TControls extends ControlsCollection> extends AbstractCon
 
   //------
   /** Valid / Валидные данные **/
-  public get valid(): boolean {
+  @computed public get valid(): boolean {
     return !this.hasErrors && this.controlList.every(c => c.valid);
   }
 
   //------
-  public get dirty(): boolean {
+  @computed public get dirty(): boolean {
     return this.controlList.some(c => c.dirty);
   }
 
@@ -70,10 +70,10 @@ export class FormGroup<TControls extends ControlsCollection> extends AbstractCon
   }
 
   //------
-  protected [PrivateFields.touched] = false;
+  @observable protected accessor _touched = false;
 
   /** The field was in focus / Поле было в фокусе **/
-  public get touched(): boolean {
+  @computed public get touched(): boolean {
     return this.controlList.length === 0 ? this._touched : this.controlList.some(c => c.touched);
   }
 
@@ -84,7 +84,7 @@ export class FormGroup<TControls extends ControlsCollection> extends AbstractCon
   }
 
   //------
-  public get focused(): boolean {
+  @computed public get focused(): boolean {
     return this.controlList.some(c => c.focused);
   }
 
@@ -102,7 +102,7 @@ export class FormGroup<TControls extends ControlsCollection> extends AbstractCon
   }
 
   //------
-  private [PrivateFields.reactionValidations]: {
+  @observable.shallow private _reactionValidations: {
     result: IStateValidatos;
     disposers: IReactionDisposer;
   }[] = [];
@@ -124,24 +124,6 @@ export class FormGroup<TControls extends ControlsCollection> extends AbstractCon
     },
   ) {
     super(ControlTypes.Group);
-
-    makeObservable<FormGroup<TControls>, PrivateFields>(this, {
-      processing: computed,
-
-      _controls: observable,
-      controls: computed,
-
-      valid: computed,
-
-      dirty: computed,
-
-      _touched: observable,
-      touched: computed,
-
-      focused: computed,
-
-      _reactionValidations: observable.shallow,
-    });
 
     this.getActivate = options?.getActivate;
     this.additionalData = options?.additionalData;
